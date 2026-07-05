@@ -419,6 +419,31 @@ class DioNetworkClient implements NetworkClient {
       silentExceptions: silentExceptions,
     );
   }
+
+  @override
+  Future<T> patch<T>(
+    String path, {
+    NetworkRequestPayload? data,
+    Map<String, Object?>? queryParameters,
+    Map<String, String>? headers,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+    Set<Type> silentExceptions = const {},
+    String? apiVersion,
+  }) async {
+    final resolvedPath = _resolvePath(path, apiVersion);
+    return _executeRequest<T>(
+      () => _dio.patch<dynamic>(
+        resolvedPath,
+        data: _buildRequestBody(data),
+        queryParameters: queryParameters,
+        options: Options(headers: headers),
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      ),
+      silentExceptions: silentExceptions,
+    );
+  }
 }
 
 class _DioInterceptorWrapper extends Interceptor {

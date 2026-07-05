@@ -368,6 +368,31 @@ class HttpNetworkClient implements NetworkClient {
     return _executeRequest<T>(request, silentExceptions: silentExceptions);
   }
 
+  @override
+  Future<T> patch<T>(
+    String path, {
+    NetworkRequestPayload? data,
+    Map<String, Object?>? queryParameters,
+    Map<String, String>? headers,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+    Set<Type> silentExceptions = const {},
+    String? apiVersion,
+  }) async {
+    final uri = _buildUri(path, queryParameters, apiVersion);
+    final request = _buildRequest('PATCH', uri, data, onSendProgress);
+
+    if (headers != null) {
+      request.headers.addAll(headers);
+    }
+
+    return _executeRequest<T>(
+      request,
+      onReceiveProgress: onReceiveProgress,
+      silentExceptions: silentExceptions,
+    );
+  }
+
   http.BaseRequest _buildRequest(
     String method,
     Uri uri,

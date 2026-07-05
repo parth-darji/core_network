@@ -81,6 +81,17 @@ abstract interface class NetworkClient {
     Set<Type> silentExceptions = const {},
     String? apiVersion,
   });
+
+  Future<T> patch<T>(
+    String path, {
+    NetworkRequestPayload? data,
+    Map<String, Object?>? queryParameters,
+    Map<String, String>? headers,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+    Set<Type> silentExceptions = const {},
+    String? apiVersion,
+  });
 }
 
 abstract interface class ConnectionTracker {
