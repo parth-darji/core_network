@@ -469,6 +469,39 @@ void main() {
       );
     });
 
+    test('Throws NetworkException with parsed nested validation error message lists', () async {
+      final errorPayload = {
+        'success': false,
+        'error': {
+          'code': 'BAD_REQUEST',
+          'message': ['vendorId must be a UUID', 'projectId must be a UUID'],
+          'timestamp': '2026-07-12T04:22:19.336Z',
+          'path': '/purchase-orders'
+        }
+      };
+
+      when(mockClient.send(any)).thenAnswer((invocation) async {
+        final request =
+            invocation.positionalArguments.first as http.BaseRequest;
+        return http.StreamedResponse(
+          Stream.value(utf8.encode(jsonEncode(errorPayload))),
+          400,
+          request: request,
+        );
+      });
+
+      expect(
+        () => client.get<dynamic>('/test'),
+        throwsA(
+          isA<UnknownNetworkException>().having(
+            (e) => e.message,
+            'message',
+            'vendorId must be a UUID, projectId must be a UUID',
+          ),
+        ),
+      );
+    });
+
     test(
       'Throws exception with isSilent set to true when silentExceptions contains the exception type',
       () async {

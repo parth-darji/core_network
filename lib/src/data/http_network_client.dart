@@ -216,10 +216,27 @@ class HttpNetworkClient implements NetworkClient {
         final decoded = jsonDecode(body);
         if (decoded is Map<String, dynamic>) {
           errorMap = decoded;
-          errorMessage =
-              decoded['message']?.toString() ??
-              decoded['error']?.toString() ??
-              errorMessage;
+          if (decoded['error'] is Map<String, dynamic>) {
+            final innerError = decoded['error'] as Map<String, dynamic>;
+            final innerMessage = innerError['message'];
+            if (innerMessage is List) {
+              errorMessage = innerMessage.join(', ');
+            } else if (innerMessage != null) {
+              errorMessage = innerMessage.toString();
+            } else {
+              errorMessage = innerError['code']?.toString() ?? errorMessage;
+            }
+          } else {
+            final msg = decoded['message'];
+            if (msg is List) {
+              errorMessage = msg.join(', ');
+            } else {
+              errorMessage =
+                  msg?.toString() ??
+                  decoded['error']?.toString() ??
+                  errorMessage;
+            }
+          }
         }
       }
     } catch (_) {

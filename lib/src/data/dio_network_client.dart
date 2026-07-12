@@ -252,10 +252,27 @@ class DioNetworkClient implements NetworkClient {
 
     if (responseData is Map<String, dynamic>) {
       errorMap = responseData;
-      errorMessage =
-          responseData['message']?.toString() ??
-          responseData['error']?.toString() ??
-          errorMessage;
+      if (responseData['error'] is Map<String, dynamic>) {
+        final innerError = responseData['error'] as Map<String, dynamic>;
+        final innerMessage = innerError['message'];
+        if (innerMessage is List) {
+          errorMessage = innerMessage.join(', ');
+        } else if (innerMessage != null) {
+          errorMessage = innerMessage.toString();
+        } else {
+          errorMessage = innerError['code']?.toString() ?? errorMessage;
+        }
+      } else {
+        final msg = responseData['message'];
+        if (msg is List) {
+          errorMessage = msg.join(', ');
+        } else {
+          errorMessage =
+              msg?.toString() ??
+              responseData['error']?.toString() ??
+              errorMessage;
+        }
+      }
     } else if (responseData is String && responseData.isNotEmpty) {
       errorMessage = responseData;
     }
