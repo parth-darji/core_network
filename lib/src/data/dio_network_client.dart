@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart' hide ProgressCallback;
 import 'package:core_network/src/domain/network_client.dart';
 import 'package:core_network/src/domain/app_exceptions.dart';
@@ -133,18 +134,29 @@ class DioNetworkClient implements NetworkClient {
       final response = await requestCall();
       return _parseResponse<T>(response.data);
     } on DioException catch (e) {
-      throw _mapDioError(e, silentExceptions: mergedSilentExceptions);
+      final mapped = _mapDioError(e, silentExceptions: mergedSilentExceptions);
+      if (kDebugMode) {
+        print('[HTTP Error] DioException: ${mapped.message} (status: ${mapped.statusCode})');
+      }
+      throw mapped;
     } catch (e) {
       if (e is NetworkException) {
         final isSilent =
             e.isSilent || mergedSilentExceptions.contains(e.runtimeType);
-        if (isSilent != e.isSilent) {
-          throw _updateExceptionSilence(e, isSilent: isSilent);
+        final mapped = isSilent != e.isSilent
+            ? _updateExceptionSilence(e, isSilent: isSilent)
+            : e;
+        if (kDebugMode) {
+          print('[HTTP Error] NetworkException: ${mapped.message} (status: ${mapped.statusCode})');
         }
-        rethrow;
+        throw mapped;
       }
       final isSilent = mergedSilentExceptions.contains(UnknownNetworkException);
-      throw UnknownNetworkException(message: e.toString(), isSilent: isSilent);
+      final mapped = UnknownNetworkException(message: e.toString(), isSilent: isSilent);
+      if (kDebugMode) {
+        print('[HTTP Error] UnknownException: ${mapped.message} (status: ${mapped.statusCode})');
+      }
+      throw mapped;
     }
   }
 

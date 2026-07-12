@@ -1,6 +1,6 @@
 name: core_network
 description: Decoupled remote API and network connectivity client package supporting http and dio
-version: 1.0.1
+version: 1.0.2
 publish_to: 'none'
 
 environment:

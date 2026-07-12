@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:core_network/src/domain/network_client.dart';
 import 'package:core_network/src/domain/app_exceptions.dart';
@@ -181,13 +182,20 @@ class HttpNetworkClient implements NetworkClient {
       if (e is NetworkException) {
         final isSilent =
             e.isSilent || mergedSilentExceptions.contains(e.runtimeType);
-        if (isSilent != e.isSilent) {
-          throw _updateExceptionSilence(e, isSilent: isSilent);
+        final mapped = isSilent != e.isSilent
+            ? _updateExceptionSilence(e, isSilent: isSilent)
+            : e;
+        if (kDebugMode) {
+          print('[HTTP Error] NetworkException: ${mapped.message} (status: ${mapped.statusCode})');
         }
-        rethrow;
+        throw mapped;
       }
       final isSilent = mergedSilentExceptions.contains(UnknownNetworkException);
-      throw UnknownNetworkException(message: e.toString(), isSilent: isSilent);
+      final mapped = UnknownNetworkException(message: e.toString(), isSilent: isSilent);
+      if (kDebugMode) {
+        print('[HTTP Error] UnknownException: ${mapped.message} (status: ${mapped.statusCode})');
+      }
+      throw mapped;
     }
   }
 
